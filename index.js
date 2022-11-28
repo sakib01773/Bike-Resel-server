@@ -39,7 +39,26 @@ async function run(){
           const product = req.body;
           const result = await productsCollection.insertOne(product)
           res.send(result)
-      })
+        })
+      
+      // advertaisement
+      app.put('/products/seller/:id', async(req, res) =>{
+        const id = req.params.id;
+        const filter = {_id: ObjectId(id)}
+        console.log('id', id)
+        const options = { upsert: true }
+        const updatedDoc = {
+            $set: {
+                roleModel: 'Advertised'
+            }
+        }
+        const result = await productsCollection.updateOne(filter, updatedDoc, options)
+
+        // console.log(result)
+
+        res.send(result)
+    })
+
 
     }
 
