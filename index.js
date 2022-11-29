@@ -317,9 +317,9 @@ run().catch(console.log)
 
 
 app.get('/', (req, res) => {
-  res.send('Hello World!')
+  res.send('Hello from bike resel!')
 })
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`bike resel app app listening on port ${port}`)
 })
