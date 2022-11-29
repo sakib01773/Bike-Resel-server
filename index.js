@@ -156,18 +156,18 @@ async function run(){
 
 
         // advertise field add 
-        // app.put('/addAdvertise', async(req, res) =>{
-        //     const filter = {}
-        //     const options = { upsert: true }
-        //     const updatedDoc = {
-        //         $set: {
-        //             Advertised: 'Ad'
-        //         }
-        //     }
-        //     const result = await productsCollection.updateMany(filter, updatedDoc, options)
+        app.put('/addAdvertise', async(req, res) =>{
+            const filter = {}
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    Advertised: 'Ad'
+                }
+            }
+            const result = await productsCollection.updateMany(filter, updatedDoc, options)
 
-        //     res.send(result)
-        // })
+            res.send(result)
+        })
 
         // make admin 
         app.put('/users/admin/:id', verifyJWT, async(req, res) =>{
