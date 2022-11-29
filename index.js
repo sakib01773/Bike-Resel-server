@@ -45,6 +45,10 @@ async function run(){
         const usersCollection = client.db('bikeresell').collection('users')
 
         const productsCollection = client.db('bikeresell').collection('products')
+        const ordersCollection = client.db('bikeresell').collection('orders')
+
+
+        const paymentsCollection = client.db('bikeresell').collection('payments')
 
         app.get('/jwt', async(req, res) =>{
             const email = req.query.email;
@@ -91,6 +95,16 @@ async function run(){
             // console.log(result)
 
             res.send(result)
+        })
+
+
+         //client advertised
+         app.get('/advertised', async(req, res) =>{
+            // const Advertised = req.params.Advertised;
+            console.log({roleModel: "Advertised"})
+            const query = {roleModel: "Advertised"}
+            const product = await productsCollection.find(query).toArray();
+            res.send(product)
         })
 
         // app.get('/products/:id', async(req, res) =>{
@@ -155,19 +169,96 @@ async function run(){
         })
 
 
-        // advertise field add 
-        app.put('/addAdvertise', async(req, res) =>{
-            const filter = {}
-            const options = { upsert: true }
-            const updatedDoc = {
-                $set: {
-                    Advertised: 'Ad'
-                }
-            }
-            const result = await productsCollection.updateMany(filter, updatedDoc, options)
 
-            res.send(result)
-        })
+
+
+                // orders post
+                app.post('/orders', async(req, res) =>{
+                    const orders = req.body;
+                    console.log(orders)
+                    const result = await ordersCollection.insertOne(orders)
+                    res.send(result)
+                })
+        
+                // order gets for my orders 
+                app.get('/orders', async(req, res) =>{
+                    // const email = req.params.email;
+                    const query = {  }
+                    const orders = await ordersCollection.find(query).toArray()
+                    res.send(orders)
+                })
+        
+                  // buyer
+                  app.get('/users/buyer/:email',  async(req, res) =>{
+                    const email = req.params.email
+                    const query = { email: email }
+                    const user = await usersCollection.findOne(query)
+                    // console.log(user)
+                    res.send({isBuyer: user?.allUsers === "Buyer"})
+                })
+        
+        
+                app.get('/orders/:id', async(req, res) =>{
+                    const id = req.params.id;
+                    const quary = {_id: ObjectId(id)}
+                    const order = await ordersCollection.findOne(quary)
+                    res.send(order)
+                })
+        
+                // payment 
+        
+                app.post('/create-payment-intent', async(req, res) =>{
+                    const order = req.body;
+                    let price = order.price;
+                    price = parseInt(price)
+                    const amount = price * 100; 
+        
+                    const paymentIntent = await stripe.paymentIntents.create({
+                        currency: "usd",
+                        amount: amount,
+                        "payment_method_types": [
+                            "card"
+                        ]
+                    })
+        
+                    res.send({
+                        clientSecret: paymentIntent.client_secret,
+                      });
+                })
+        
+        
+                app.post('/payments', async(req, res) =>{
+                    const payment = req.body;
+                    const result = await paymentsCollection.insertOne(payment)
+        
+                    const id = payment.orderId;
+                    const filter = {_id: ObjectId(id)}
+                    const updatedDoc = {
+                        $set: {
+                            paid: true,
+                            transactionId: payment.transactionId
+                        }
+                    }
+        
+                    const updateResult = await ordersCollection.updateOne(filter, updatedDoc)
+        
+                    res.send(result)
+                })
+        
+
+        // advertise field add 
+        // app.put('/addAdvertise', async(req, res) =>{
+        //     const filter = {}
+        //     const options = { upsert: true }
+        //     const updatedDoc = {
+        //         $set: {
+        //             Advertised: 'Ad'
+        //         }
+        //     }
+        //     const result = await productsCollection.updateMany(filter, updatedDoc, options)
+
+        //     res.send(result)
+        // })
 
         // make admin 
         app.put('/users/admin/:id', verifyJWT, async(req, res) =>{
@@ -201,6 +292,7 @@ async function run(){
             const result = await usersCollection.deleteOne(filter)
             res.send(result)
         })
+       
 
 
 
