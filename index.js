@@ -7,6 +7,9 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 require('dotenv').config()
 
+// new change 
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
 const jwt = require('jsonwebtoken');
 
 
@@ -260,29 +263,27 @@ async function run(){
         //     res.send(result)
         // })
 
-        // make admin 
+        // make admin chages
         app.put('/users/admin/:id', verifyJWT, async(req, res) =>{
             const decodedEmail = req.decoded.email;
-
-            const query = { email: decodedEmail }
+            const query = {email: decodedEmail}
+            console.log(query)
             const user = await usersCollection.findOne(query)
 
-            if(user.role !== 'Adimn'){
-                return res.status(403).send({message: 'Forbidden access'})
+            if(user?.role !== 'Admin'){
+                return res.status(403).send({message: 'forbiden access'})
             }
 
-
             const id = req.params.id;
-            const filter = {_id: ObjectId(id)}
-            const options = { upsert: true }
-            const updatedDoc = {
+            const filter = { _id: ObjectId(id)}
+            const options = {upsert: true}
+            const updatedDoc ={
                 $set: {
                     role: 'Admin'
                 }
             }
             const result = await usersCollection.updateOne(filter, updatedDoc, options)
-
-            res.send(result)
+            res.send (result)
         })
 
 
